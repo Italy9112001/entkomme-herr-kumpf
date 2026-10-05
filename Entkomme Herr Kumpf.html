@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entkomme Herr Kumpf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{
+--bg:#0b1410; --panel:#131f18; --panel2:#0f1a14; --ink:#f1f6f0; --sub:#8ea395;
+--accent:#57e0a3; --warn:#f4c25a; --danger:#f16158; --track:#1c2a21; --ring:rgba(87,224,163,.18);
+box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+:root:not([data-theme="dark"]){
+--bg:#f3f7f1; --panel:#ffffff; --panel2:#eef4ec; --ink:#0f1c13; --sub:#5c6f61;
+--accent:#1e9d68; --warn:#a97a00; --danger:#c8352b; --track:#e2ece2; --ring:rgba(30,157,104,.12);
+}
+}
+:root[data-theme="dark"]{
+--bg:#0b1410; --panel:#131f18; --panel2:#0f1a14; --ink:#f1f6f0; --sub:#8ea395;
+--accent:#57e0a3; --warn:#f4c25a; --danger:#f16158; --track:#1c2a21; --ring:rgba(87,224,163,.18);
+}
+html,body{height:100%;}
+*{box-sizing:border-box;}
+body{
+margin:0; background:radial-gradient(600px 300px at 50% -10%, var(--ring), transparent), var(--bg);
+color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+display:flex; flex-direction:column; align-items:center;
+min-height:100%; padding:28px 18px calc(28px + env(safe-area-inset-bottom,0px));
+}
+.disp{ font-family:'Space Grotesk', -apple-system, sans-serif; }
+h1{ font-size:1.5rem; font-weight:700; letter-spacing:-0.02em; margin:4px 0 4px; text-align:center; }
+.sub{ color:var(--sub); font-size:0.93rem; margin:0 0 20px; text-align:center; max-width:320px; line-height:1.45; }
+.card{ background:var(--panel); border-radius:22px; padding:24px; width:100%; max-width:390px; margin-bottom:16px; }
+label{ display:block; font-size:0.85rem; color:var(--sub); margin-bottom:10px; }
+.pace-input{ display:flex; gap:8px; align-items:center; justify-content:center; }
+.pace-input input{
+width:68px; font-size:1.6rem; text-align:center; padding:12px 0;
+border-radius:14px; border:1px solid var(--track); background:var(--track);
+color:var(--ink); font-weight:700; font-family:'Space Grotesk',sans-serif;
+}
+.pace-input span{ font-size:1.3rem; color:var(--sub); }
+.pace-input .unit{ font-size:0.85rem; margin-left:4px; }
+.goal-input{ display:flex; gap:8px; align-items:center; justify-content:center; }
+.goal-input input{
+width:90px; font-size:1.4rem; text-align:center; padding:12px 0;
+border-radius:14px; border:1px solid var(--track); background:var(--track);
+color:var(--ink); font-weight:700; font-family:'Space Grotesk',sans-serif;
+}
+.goal-input .unit{ font-size:0.85rem; color:var(--sub); }
+.records{ display:flex; justify-content:space-around; text-align:center; }
+.records .num{ font-size:1.3rem; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+.records .lbl{ font-size:0.7rem; color:var(--sub); margin-top:2px; }
+button{
+width:100%; max-width:390px; padding:17px; border:none; border-radius:16px;
+background:var(--accent); color:#04140a; font-size:1.05rem; font-weight:700;
+margin-top:4px; cursor:pointer; font-family:'Space Grotesk',sans-serif;
+transition:transform .15s ease, opacity .15s ease;
+}
+button.secondary{ background:transparent; border:1px solid var(--track); color:var(--ink); margin-top:10px; }
+button.pausebtn{ background:var(--panel2); color:var(--ink); border:1px solid var(--track); }
+button:active{ transform:scale(0.98); opacity:0.9; }
+#run{ display:none; width:100%; max-width:390px; }
+.stats{ display:flex; justify-content:space-between; margin-bottom:6px; }
+.stat{ text-align:center; flex:1; }
+.stat .num{ font-size:1.6rem; font-weight:700; letter-spacing:-0.02em; }
+.stat .lbl{ font-size:0.72rem; color:var(--sub); margin-top:2px; }
+.duel{ background:var(--panel); border-radius:22px; padding:24px 18px; text-align:center; position:relative; }
+.duel .msg{ font-size:1.0rem; font-weight:600; margin-bottom:18px; min-height:2.4em; transition:color .3s ease; }
+.track{ position:relative; height:16px; border-radius:10px; background:var(--track); margin:12px 6px 34px; }
+.you, .ghost{
+position:absolute; top:50%; width:38px; height:38px; border-radius:50%;
+transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center;
+font-size:1.2rem; transition:left .35s ease; box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+.you{ left:50%; background:var(--ink); color:var(--bg); z-index:2; }
+.ghost{ left:50%; background:var(--danger); transition:left .35s ease, background .35s ease, box-shadow .3s ease; }
+.ghost.close{ box-shadow:0 0 0 6px rgba(241,97,88,.25); }
+.ghost.frozen{ filter:grayscale(0.4); }
+.fill{ position:absolute; top:0; height:100%; border-radius:10px; background:var(--accent); transition:width .35s ease, left .35s ease, background .35s ease; }
+.setuperror{ color:var(--danger); font-size:0.85rem; margin-top:12px; display:none; }
+.devrow{ display:flex; align-items:center; gap:8px; margin:16px 0 0; cursor:pointer; }
+.devrow input{ width:18px; height:18px; }
+.event-banner{
+display:none; width:100%; max-width:390px; border-radius:18px; padding:16px 18px;
+margin-bottom:14px; font-weight:700; text-align:center; font-family:'Space Grotesk',sans-serif;
+}
+.event-banner .quote{ font-family:-apple-system,sans-serif; font-weight:400; font-size:0.85rem; margin-top:6px; opacity:0.85; }
+.event-banner .hint{ font-family:-apple-system,sans-serif; font-weight:400; font-size:0.78rem; margin-top:4px; opacity:0.7; }
+.event-banner.start{ background:var(--panel2); color:var(--accent); border:1px solid var(--accent); }
+.event-banner.sprint{ background:var(--warn); color:#241900; }
+.event-banner.squat{ background:var(--danger); color:#2a0505; }
+.event-banner.lunges{ background:#7c5cff; color:#f5f2ff; }
+.event-banner.plank{ background:#3fa7d6; color:#04211a; }
+.event-banner.jacks{ background:#ff8fab; color:#33000f; }
+.event-banner.burpees{ background:#ff9f45; color:#2a1400; }
+.event-banner.nachbrenner{ background:var(--accent); color:#04140a; }
+.event-banner .count{ font-size:1.5rem; margin-top:4px; }
+.event-banner button{ background:#04140a; color:#fff; margin-top:12px; padding:13px; }
+.pause-overlay{
+display:none; position:absolute; inset:0; background:rgba(4,10,7,.78); border-radius:22px;
+align-items:center; justify-content:center; flex-direction:column; z-index:5;
+}
+.pause-overlay .pt{ font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:#fff; margin-bottom:14px; }
+.pause-overlay button{ width:auto; padding:12px 26px; }
+.overlay{
+display:none; position:fixed; inset:0; background:rgba(4,10,7,.72);
+align-items:center; justify-content:center; padding:20px; z-index:10;
+}
+.overlay .box{ background:var(--panel); border-radius:24px; padding:32px 26px; text-align:center; max-width:340px; width:100%; }
+.overlay .box h2{ font-family:'Space Grotesk',sans-serif; font-size:1.6rem; margin:0 0 6px; }
+.overlay .box p{ color:var(--sub); font-size:0.92rem; margin:0 0 16px; }
+.overlay .box .final-stats{ display:flex; justify-content:space-around; margin-bottom:22px; }
+.overlay .box .final-stats .num{ font-size:1.4rem; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+.overlay .box .final-stats .lbl{ font-size:0.7rem; color:var(--sub); }
+.overlay .box .record-badge{ display:none; background:var(--accent); color:#04140a; font-weight:700; border-radius:10px; padding:6px 10px; font-size:0.8rem; margin-bottom:14px; font-family:'Space Grotesk',sans-serif; }
+#lostOverlay .box h2{ color:var(--danger); }
+#successOverlay .box h2{ color:var(--accent); }
+.cooldown-ring{ font-size:2.6rem; margin-bottom:10px; }
+.confetti{ position:absolute; inset:0; overflow:hidden; pointer-events:none; border-radius:24px; }
+.confetti span{ position:absolute; top:-10%; font-size:1.4rem; animation:fall 1.8s ease-in forwards; }
+@keyframes fall{ to{ transform:translateY(420px) rotate(360deg); opacity:0; } }
+</style>
+</head>
+<body>
+
+<h1 class="disp">Entkomme Herr Kumpf</h1>
+<p class="sub">Stell dein Zieltempo ein (und optional eine Zieldistanz). Nach dem Start hast du 10 Sekunden Vorsprung, dann läuft Herr Kumpf mit genau diesem Tempo mit. Wird er dich einholt, hast du verloren.</p>
+
+<div class="card" id="setup">
+<label for="min">Zieltempo (pro Kilometer)</label>
+<div class="pace-input">
+<input type="number" id="min" value="6" min="2" max="20">
+<span>:</span>
+<input type="number" id="sec" value="0" min="0" max="59">
+<span class="unit">min/km</span>
+</div>
+<label for="goal" style="margin-top:18px;">Zieldistanz (optional)</label>
+<div class="goal-input">
+<input type="number" id="goal" placeholder="frei" min="0" step="0.1">
+<span class="unit">km</span>
+</div>
+<div class="setuperror" id="err">Standort konnte nicht abgerufen werden. Bitte Standortfreigabe erlauben.</div>
+<label class="devrow" for="devMode">
+<input type="checkbox" id="devMode">
+<span>Entwickler-Optionen (Events alle 20 Sek.)</span>
+</label>
+</div>
+
+<div class="card" id="recordsCard">
+<div class="records">
+<div><div class="num disp" id="recDist">0.00</div><div class="lbl">Rekord km</div></div>
+<div><div class="num disp" id="recTime">00:00</div><div class="lbl">Rekord Zeit</div></div>
+</div>
+</div>
+
+<button id="startBtn" class="disp">Lauf starten</button>
+
+<div id="run">
+<div class="event-banner start" id="startBanner">Vorsprung sichern<div class="count" id="startCount">10 s</div></div>
+<div class="event-banner sprint" id="sprintBanner">🔥 Sprint! Erhöhe dein Tempo<div class="count" id="sprintCount">20 s</div><div class="quote" id="sprintQuote"></div></div>
+<div class="event-banner squat" id="squatBanner">🛑 Anhalten &amp; 5 Kniebeugen machen!<div class="count" id="squatCount">15 s</div><div class="quote" id="squatQuote"></div><div class="hint">Herr Kumpf wartet, solange du übst</div><button id="squatDoneBtn">Kniebeugen erledigt ✅</button></div>
+<div class="event-banner lunges" id="lungesBanner">🦵 10 gesprungene Ausfallschritte!<div class="count" id="lungesCount">18 s</div><div class="quote" id="lungesQuote"></div><div class="hint">Herr Kumpf wartet, solange du übst</div><button id="lungesDoneBtn">Ausfallschritte erledigt ✅</button></div>
+<div class="event-banner burpees" id="burpeesBanner">💥 5 Burpees!<div class="count" id="burpeesCount">20 s</div><div class="quote" id="burpeesQuote"></div><div class="hint">Herr Kumpf wartet, solange du übst</div><button id="burpeesDoneBtn">Burpees erledigt ✅</button></div>
+<div class="event-banner plank" id="plankBanner">🧘 30 Sekunden Plank halten!<div class="count" id="plankCount">30 s</div><div class="quote" id="plankQuote"></div><div class="hint">Muss voll durchgehalten werden – Herr Kumpf wartet</div></div>
+<div class="event-banner jacks" id="jacksBanner">🤸 20 Sekunden Hampelmänner!<div class="count" id="jacksCount">20 s</div><div class="quote" id="jacksQuote"></div><div class="hint">Muss voll durchgehalten werden – Herr Kumpf wartet</div></div>
+<div class="event-banner nachbrenner" id="nachbrennerBanner">💨 Nachbrenner! Letzte Chance zum Entkommen<div class="count" id="nachbrennerCount">8 s</div><div class="quote" id="nachbrennerQuote"></div></div>
+
+<div class="card">
+<div class="stats">
+<div class="stat"><div class="num disp" id="paceNow">&ndash;</div><div class="lbl">Tempo min/km</div></div>
+<div class="stat"><div class="num disp" id="dist">0.00</div><div class="lbl" id="distLbl">km gelaufen</div></div>
+<div class="stat"><div class="num disp" id="time">00:00</div><div class="lbl">Zeit</div></div>
+</div>
+</div>
+
+<div class="duel">
+<div class="pause-overlay" id="pauseOverlay"><div class="pt disp">⏸️ Pausiert</div><button id="resumeBtn" class="disp">Weiter</button></div>
+<div class="msg" id="msg">Herr Kumpf macht sich bereit</div>
+<div class="track">
+<div class="fill" id="fill"></div>
+<div class="you">🏃</div>
+<div class="ghost" id="ghost">🧑‍🏫</div>
+</div>
+</div>
+
+<button class="pausebtn disp" id="pauseBtn">Pause</button>
+<button class="secondary" id="stopBtn">Lauf beenden</button>
+</div>
+
+<div class="overlay" id="cooldownOverlay">
+<div class="box">
+<div class="cooldown-ring">🧘</div>
+<h2 class="disp">Kurz durchatmen</h2>
+<p id="cooldownQuote">Herr Kumpf hat dich erwischt. Kurze Verschnaufpause...</p>
+<div class="count disp" id="cooldownCount" style="font-size:1.8rem;font-weight:700;">10 s</div>
+</div>
+</div>
+
+<div class="overlay" id="lostOverlay">
+<div class="box">
+<h2 class="disp">Eingeholt!</h2>
+<p id="lostQuote">Herr Kumpf hat dich erwischt. Hier ist dein Ergebnis:</p>
+<div class="record-badge" id="lostRecordBadge">🏅 Neuer Rekord!</div>
+<div class="final-stats">
+<div><div class="num" id="finalDist">0.00</div><div class="lbl">km</div></div>
+<div><div class="num" id="finalTime">00:00</div><div class="lbl">Zeit</div></div>
+</div>
+<button id="retryBtn" class="disp">Nochmal versuchen</button>
+</div>
+</div>
+
+<div class="overlay" id="successOverlay">
+<div class="box">
+<div class="confetti" id="confetti"></div>
+<h2 class="disp" id="successTitle">Geschafft! 🎉</h2>
+<p id="successSub">Du bist Herrn Kumpf entkommen.</p>
+<div class="record-badge" id="successRecordBadge">🏅 Neuer Rekord!</div>
+<div class="final-stats">
+<div><div class="num" id="successDist">0.00</div><div class="lbl">km</div></div>
+<div><div class="num" id="successTime">00:00</div><div class="lbl">Zeit</div></div>
+</div>
+<button id="successRetryBtn" class="disp">Nochmal laufen</button>
+</div>
+</div>
+
+<script>
+(function(){
+const setup = document.getElementById('setup');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resumeBtn = document.getElementById('resumeBtn');
+const runEl = document.getElementById('run');
+const err = document.getElementById('err');
+
+const paceNowEl = document.getElementById('paceNow');
+const distEl = document.getElementById('dist');
+const distLbl = document.getElementById('distLbl');
+const timeEl = document.getElementById('time');
+const msgEl = document.getElementById('msg');
+const fillEl = document.getElementById('fill');
+const ghostEl = document.getElementById('ghost');
+const pauseOverlay = document.getElementById('pauseOverlay');
+
+const startBanner = document.getElementById('startBanner');
+const startCount = document.getElementById('startCount');
+const sprintBanner = document.getElementById('sprintBanner');
+const sprintCount = document.getElementById('sprintCount');
+const squatBanner = document.getElementById('squatBanner');
+const squatCount = document.getElementById('squatCount');
+const squatDoneBtn = document.getElementById('squatDoneBtn');
+const lungesBanner = document.getElementById('lungesBanner');
+const lungesCount = document.getElementById('lungesCount');
+const lungesDoneBtn = document.getElementById('lungesDoneBtn');
+const burpeesBanner = document.getElementById('burpeesBanner');
+const burpeesCount = document.getElementById('burpeesCount');
+const burpeesDoneBtn = document.getElementById('burpeesDoneBtn');
+const plankBanner = document.getElementById('plankBanner');
+const plankCount = document.getElementById('plankCount');
+const jacksBanner = document.getElementById('jacksBanner');
+const jacksCount = document.getElementById('jacksCount');
+const nachbrennerBanner = document.getElementById('nachbrennerBanner');
+const nachbrennerCount = document.getElementById('nachbrennerCount');
+
+const cooldownOverlay = document.getElementById('cooldownOverlay');
+const cooldownCount = document.getElementById('cooldownCount');
+const cooldownQuote = document.getElementById('cooldownQuote');
+
+const lostOverlay = document.getElementById('lostOverlay');
+const finalDist = document.getElementById('finalDist');
+const finalTime = document.getElementById('finalTime');
+const lostRecordBadge = document.getElementById('lostRecordBadge');
+const retryBtn = document.getElementById('retryBtn');
+
+const successOverlay = document.getElementById('successOverlay');
+const successTitle = document.getElementById('successTitle');
+const successSub = document.getElementById('successSub');
+const successDist = document.getElementById('successDist');
+const successTime = document.getElementById('successTime');
+const successRecordBadge = document.getElementById('successRecordBadge');
+const successRetryBtn = document.getElementById('successRetryBtn');
+const confettiEl = document.getElementById('confetti');
+
+const recDistEl = document.getElementById('recDist');
+const recTimeEl = document.getElementById('recTime');
+
+const GRACE_MS = 10000;
+const COOLDOWN_MS = 10000;
+const NACHBRENNER_MS = 8000;
+const TICK_MS = 350;
+const FAR_THRESHOLD = 20;
+const MAX_ACCURACY_M = 35;
+
+const Q_START = ["Kumpf ruft: „Los geht's, keine Ausreden!“","Kumpf pfeift: „Auf die Plätze!“","Kumpf grinst: „Zeig mir, was du drauf hast!“"];
+const Q_SPRINT = ["Kumpf brüllt: „Tempo, Tempo!“","Kumpf ruft: „Das war noch nicht alles!“","Kumpf: „Ich hol dich gleich ein!“"];
+const Q_SQUAT = ["Kumpf: „Kniebeugen, sofort!“","Kumpf pfeift: „Tief runter, Knie beugen!“"];
+const Q_LUNGES = ["Kumpf: „Ausfallschritte, aber hüpfend!“","Kumpf ruft: „Sprung-Ausfallschritte, los!“"];
+const Q_PLANK = ["Kumpf grinst: „Unterarmstütz, keine Ausreden!“","Kumpf: „Bauch anspannen, 30 Sekunden!“"];
+const Q_JACKS = ["Kumpf klatscht: „Hampelmänner, los, los!“","Kumpf: „Arme hoch, Beine auseinander, los!“"];
+const Q_BURPEES = ["Kumpf grinst breit: „5 Burpees, los geht's!“","Kumpf: „Runter, hoch, springen – los!“"];
+const Q_NACHBRENNER = ["Kumpf staunt: „Nicht schlecht... nochmal Vollgas!“","Kumpf: „Letzte Chance, häng dich rein!“"];
+const Q_CAUGHT = ["Kumpf: „Erwischt! Nächstes Mal schneller.“","Kumpf grinst: „Ich hab dich!“"];
+const Q_ESCAPED = ["Kumpf: „Respekt, das war knapp!“","Kumpf: „Diesmal hast du Glück gehabt!“"];
+const Q_CLOSE = ["Kumpf hechelt: „Ich rieche dein Parfüm schon!“","Kumpf: „Nur noch ein Schritt... für mich!“","Kumpf grinst: „Fast geschafft – für MICH!“","Kumpf: „Ich hör dein Herz schon klopfen!“"];
+const Q_FAR = ["Kumpf keucht von weitem: „Warte... kurz verschnaufen...“","Kumpf ruft: „Das zählt nicht, ich hab Seitenstechen!“","Kumpf: „Bist du schon in der nächsten Stadt?“","Kumpf schreit: „Unfair, du hast bestimmt trainiert!“"];
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+let watchId = null, timerId = null;
+let startTime = null, userDistance = 0, lastPos = null;
+let baseTargetSpeed = 0;
+let recentSpeeds = [];
+let finished = false;
+let devMode = false;
+let goalDistanceM = 0;
+
+let nextEventAt = null;
+let eventBag = [];
+let sprintActive = false, sprintEnd = 0;
+let squatActive = false, squatDeadline = 0;
+let lungesActive = false, lungesDeadline = 0;
+let burpeesActive = false, burpeesDeadline = 0;
+let plankActive = false, plankDeadline = 0;
+let jacksActive = false, jacksDeadline = 0;
+let eventPenalty = 0;
+let frozenSeconds = 0; // Zeit, in der Herr Kumpf wegen eines Stopp-Events stillsteht
+
+let nachbrennerUsed = false, nachbrennerActive = false, nachbrennerEnd = 0, nachbrennerBoost = 0;
+
+let paused = false, pauseStartedAt = 0, totalPausedMs = 0;
+let wasClose = false, wasFar = false;
+let tempMessage = null, tempMessageUntil = 0;
+
+function showQuote(list, ms){ tempMessage = pick(list); tempMessageUntil = Date.now() + ms; }
+function isStopEventActive(){ return squatActive || lungesActive || burpeesActive || plankActive || jacksActive; }
+
+function haversine(a, b){
+const R = 6371000;
+const toRad = d => d * Math.PI / 180;
+const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lon - a.lon);
+const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLon/2)**2;
+return 2 * R * Math.asin(Math.sqrt(s));
+}
+function fmtPace(secPerKm){
+if(!isFinite(secPerKm) || secPerKm <= 0) return '–';
+const m = Math.floor(secPerKm/60), s = Math.round(secPerKm%60);
+return m + ':' + String(s).padStart(2,'0');
+}
+function fmtTime(sec){
+const m = Math.floor(sec/60), s = Math.floor(sec%60);
+return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function loadRecords(){
+let d = parseFloat(localStorage.getItem('td_best_distance_m')||'0') || 0;
+let t = parseFloat(localStorage.getItem('td_best_time_s')||'0') || 0;
+recDistEl.textContent = (d/1000).toFixed(2);
+recTimeEl.textContent = fmtTime(t);
+return {d,t};
+}
+function saveRecordsIfBetter(distM, timeS){
+try{
+const cur = loadRecords();
+let improved = false;
+if(distM > cur.d){ localStorage.setItem('td_best_distance_m', String(distM)); improved = true; }
+if(timeS > cur.t){ localStorage.setItem('td_best_time_s', String(timeS)); improved = true; }
+loadRecords();
+return improved;
+}catch(e){ return false; }
+}
+
+function onPosition(pos){
+err.style.display = 'none';
+if(pos.coords.accuracy && pos.coords.accuracy > MAX_ACCURACY_M){
+lastPos = { lat: pos.coords.latitude, lon: pos.coords.longitude, t: pos.timestamp };
+return;
+}
+const now = { lat: pos.coords.latitude, lon: pos.coords.longitude, t: pos.timestamp };
+if(lastPos && !paused){
+const d = haversine(lastPos, now);
+const dt = (now.t - lastPos.t) / 1000;
+if(dt > 0 && d < 50){
+userDistance += d;
+const speed = d / dt;
+recentSpeeds.push(speed);
+if(recentSpeeds.length > 5) recentSpeeds.shift();
+}
+}
+lastPos = now;
+if(recentSpeeds.length){
+const avg = recentSpeeds.reduce((a,b)=>a+b,0) / recentSpeeds.length;
+paceNowEl.textContent = avg > 0.3 ? fmtPace(1000/avg) : '–';
+}
+}
+function onError(){ err.style.display = 'block'; }
+
+squatDoneBtn.addEventListener('click', () => { squatActive = false; squatBanner.style.display = 'none'; scheduleNextEvent(Date.now()); });
+lungesDoneBtn.addEventListener('click', () => { lungesActive = false; lungesBanner.style.display = 'none'; scheduleNextEvent(Date.now()); });
+burpeesDoneBtn.addEventListener('click', () => { burpeesActive = false; burpeesBanner.style.display = 'none'; scheduleNextEvent(Date.now()); });
+
+pauseBtn.addEventListener('click', () => {
+paused = true; pauseStartedAt = Date.now();
+pauseOverlay.style.display = 'flex';
+});
+resumeBtn.addEventListener('click', () => {
+totalPausedMs += Date.now() - pauseStartedAt;
+paused = false;
+pauseOverlay.style.display = 'none';
+});
+
+function scheduleNextEvent(now){
+if(devMode){ nextEventAt = now + 20000; }
+else { nextEventAt = now + 45000 + Math.random()*45000; }
+}
+function drawEventType(){
+if(eventBag.length === 0){ eventBag = shuffle(['sprint','squat','lunges','plank','jacks','burpees']); }
+return eventBag.pop();
+}
+function triggerEvent(now){
+const type = drawEventType();
+if(type === 'sprint'){
+sprintActive = true; sprintEnd = now + 20000;
+sprintBanner.style.display = 'block';
+document.getElementById('sprintQuote').textContent = pick(Q_SPRINT);
+} else if(type === 'squat'){
+squatActive = true; squatDeadline = now + 15000;
+squatBanner.style.display = 'block';
+document.getElementById('squatQuote').textContent = pick(Q_SQUAT);
+} else if(type === 'lunges'){
+lungesActive = true; lungesDeadline = now + 18000;
+lungesBanner.style.display = 'block';
+document.getElementById('lungesQuote').textContent = pick(Q_LUNGES);
+} else if(type === 'burpees'){
+burpeesActive = true; burpeesDeadline = now + 20000;
+burpeesBanner.style.display = 'block';
+document.getElementById('burpeesQuote').textContent = pick(Q_BURPEES);
+} else if(type === 'plank'){
+plankActive = true; plankDeadline = now + 30000;
+plankBanner.style.display = 'block';
+document.getElementById('plankQuote').textContent = pick(Q_PLANK);
+} else if(type === 'jacks'){
+jacksActive = true; jacksDeadline = now + 20000;
+jacksBanner.style.display = 'block';
+document.getElementById('jacksQuote').textContent = pick(Q_JACKS);
+}
+vibrate(60);
+}
+
+function launchConfetti(){
+confettiEl.innerHTML = '';
+const emojis = ['🎉','✨','🏅','🎊'];
+for(let i=0;i<16;i++){
+const s = document.createElement('span');
+s.textContent = emojis[i % emojis.length];
+s.style.left = (Math.random()*90+2) + '%';
+s.style.animationDelay = (Math.random()*0.4)+'s';
+confettiEl.appendChild(s);
+}
+}
+
+function startCooldown(){
+finished = true;
+if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+if(timerId !== null) clearInterval(timerId);
+vibrate([120,60,120]);
+cooldownQuote.textContent = pick(Q_CAUGHT);
+cooldownOverlay.style.display = 'flex';
+let left = Math.ceil(COOLDOWN_MS/1000);
+cooldownCount.textContent = left + ' s';
+const iv = setInterval(() => {
+left -= 1;
+cooldownCount.textContent = Math.max(0,left) + ' s';
+if(left <= 0){
+clearInterval(iv);
+cooldownOverlay.style.display = 'none';
+finishLost();
+}
+}, 1000);
+}
+
+function finishLost(){
+const distM = userDistance;
+const timeS = (Date.now() - startTime - totalPausedMs)/1000;
+const improved = saveRecordsIfBetter(distM, timeS);
+finalDist.textContent = (distM/1000).toFixed(2);
+finalTime.textContent = fmtTime(timeS);
+lostRecordBadge.style.display = improved ? 'inline-block' : 'none';
+lostOverlay.style.display = 'flex';
+}
+
+function endRunSuccess(reachedGoal){
+finished = true;
+if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+if(timerId !== null) clearInterval(timerId);
+const distM = userDistance;
+const timeS = (Date.now() - startTime - totalPausedMs)/1000;
+const improved = saveRecordsIfBetter(distM, timeS);
+successTitle.textContent = reachedGoal ? 'Ziel erreicht! 🎯' : 'Geschafft! 🎉';
+successSub.textContent = reachedGoal ? 'Du hast deine Zieldistanz geschafft, ohne erwischt zu werden.' : 'Du bist Herrn Kumpf entkommen.';
+successDist.textContent = (distM/1000).toFixed(2);
+successTime.textContent = fmtTime(timeS);
+successRecordBadge.style.display = improved ? 'inline-block' : 'none';
+launchConfetti();
+successOverlay.style.display = 'flex';
+}
+
+function tick(){
+if(finished || paused) return;
+const now = Date.now();
+
+const elapsed = (now - startTime - totalPausedMs) / 1000;
+const raceElapsed = elapsed - GRACE_MS/1000;
+timeEl.textContent = fmtTime(elapsed);
+if(goalDistanceM > 0){
+distEl.textContent = (userDistance/1000).toFixed(2) + ' / ' + (goalDistanceM/1000).toFixed(1);
+} else {
+distEl.textContent = (userDistance/1000).toFixed(2);
+}
+
+if(raceElapsed <= 0){
+const left = Math.max(0, Math.ceil(-raceElapsed));
+startCount.textContent = left + ' s';
+msgEl.textContent = 'Verschaff dir Vorsprung!';
+ghostEl.style.left = '50%'; fillEl.style.width = '0%';
+return;
+}
+if(startBanner.style.display !== 'none') startBanner.style.display = 'none';
+
+if(goalDistanceM > 0 && userDistance >= goalDistanceM){
+endRunSuccess(true);
+return;
+}
+
+if(nextEventAt === null) scheduleNextEvent(now);
+if(!sprintActive && !isStopEventActive() && !nachbrennerActive && now >= nextEventAt){
+triggerEvent(now);
+}
+
+let effectiveSpeed = baseTargetSpeed;
+
+if(sprintActive){
+effectiveSpeed = baseTargetSpeed * 1.25;
+const left = Math.max(0, Math.ceil((sprintEnd - now)/1000));
+sprintCount.textContent = left + ' s';
+if(now >= sprintEnd){ sprintActive = false; sprintBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+if(squatActive){
+const left = Math.max(0, Math.ceil((squatDeadline - now)/1000));
+squatCount.textContent = left + ' s';
+if(now >= squatDeadline){ eventPenalty += 10; squatActive = false; squatBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+if(lungesActive){
+const left = Math.max(0, Math.ceil((lungesDeadline - now)/1000));
+lungesCount.textContent = left + ' s';
+if(now >= lungesDeadline){ eventPenalty += 12; lungesActive = false; lungesBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+if(burpeesActive){
+const left = Math.max(0, Math.ceil((burpeesDeadline - now)/1000));
+burpeesCount.textContent = left + ' s';
+if(now >= burpeesDeadline){ eventPenalty += 13; burpeesActive = false; burpeesBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+if(plankActive){
+const left = Math.max(0, Math.ceil((plankDeadline - now)/1000));
+plankCount.textContent = left + ' s';
+if(now >= plankDeadline){ plankActive = false; plankBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+if(jacksActive){
+const left = Math.max(0, Math.ceil((jacksDeadline - now)/1000));
+jacksCount.textContent = left + ' s';
+if(now >= jacksDeadline){ jacksActive = false; jacksBanner.style.display = 'none'; scheduleNextEvent(now); }
+}
+
+// Herr Kumpf bleibt stehen, solange ein Stopp-Event läuft
+if(isStopEventActive()){ frozenSeconds += TICK_MS/1000; }
+const pursuerRaceElapsed = Math.max(0, raceElapsed - frozenSeconds);
+
+if(nachbrennerActive){
+effectiveSpeed = baseTargetSpeed * 0.5;
+const left = Math.max(0, Math.ceil((nachbrennerEnd - now)/1000));
+nachbrennerCount.textContent = left + ' s';
+if(now >= nachbrennerEnd){
+nachbrennerActive = false; nachbrennerBanner.style.display = 'none';
+const pursuerCheck = baseTargetSpeed * pursuerRaceElapsed + eventPenalty - nachbrennerBoost;
+if(userDistance - pursuerCheck > 0){
+showQuote(Q_ESCAPED, 4000); vibrate(40); scheduleNextEvent(now);
+} else {
+startCooldown(); return;
+}
+}
+}
+
+const pursuerDistance = effectiveSpeed * pursuerRaceElapsed + eventPenalty - nachbrennerBoost;
+const gap = userDistance - pursuerDistance;
+
+if(gap <= 0 && !nachbrennerActive){
+if(!nachbrennerUsed && Math.random() < 0.5){
+nachbrennerUsed = true;
+nachbrennerActive = true;
+nachbrennerEnd = now + NACHBRENNER_MS;
+nachbrennerBoost += 15;
+document.getElementById('nachbrennerQuote').textContent = pick(Q_NACHBRENNER);
+nachbrennerBanner.style.display = 'block';
+sprintBanner.style.display = 'none'; squatBanner.style.display = 'none';
+lungesBanner.style.display = 'none'; plankBanner.style.display = 'none';
+jacksBanner.style.display = 'none'; burpeesBanner.style.display = 'none';
+sprintActive = false; squatActive = false; lungesActive = false;
+plankActive = false; jacksActive = false; burpeesActive = false;
+vibrate([80,40,80]);
+return;
+} else {
+ghostEl.style.left = '50%'; fillEl.style.width = '0%';
+startCooldown();
+return;
+}
+}
+
+const clamped = Math.max(0, Math.min(30, gap));
+const pct = 50 + (clamped/30) * 44;
+ghostEl.style.left = pct + '%';
+const isClose = gap <= 6;
+ghostEl.classList.toggle('close', isClose);
+ghostEl.classList.toggle('frozen', isStopEventActive());
+if(isClose && !wasClose){ vibrate(50); showQuote(Q_CLOSE, 4000); }
+wasClose = isClose;
+const isFar = gap > FAR_THRESHOLD;
+if(isFar && !wasFar){ showQuote(Q_FAR, 4000); }
+wasFar = isFar;
+
+let color;
+if(gap > 15) color = 'var(--accent)';
+else if(gap > 6) color = 'var(--warn)';
+else color = 'var(--danger)';
+
+ghostEl.style.background = nachbrennerActive ? 'var(--accent)' : color;
+fillEl.style.left = pct + '%';
+fillEl.style.width = (94 - pct) + '%';
+fillEl.style.background = color;
+
+if(tempMessage && now < tempMessageUntil){
+msgEl.textContent = tempMessage;
+} else {
+tempMessage = null;
+if(isStopEventActive()) msgEl.textContent = 'Herr Kumpf wartet auf dich...';
+else if(gap > 15) msgEl.textContent = 'Herr Kumpf ' + Math.round(gap) + ' m hinter dir';
+else if(gap > 6) msgEl.textContent = 'Kumpf holt auf: noch ' + Math.round(gap) + ' m';
+else msgEl.textContent = 'Achtung, er ist direkt hinter dir!';
+}
+}
+
+function resetToSetup(){
+lostOverlay.style.display = 'none';
+successOverlay.style.display = 'none';
+runEl.style.display = 'none';
+setup.style.display = 'block';
+document.getElementById('recordsCard').style.display = 'block';
+startBtn.style.display = 'block';
+loadRecords();
+}
+retryBtn.addEventListener('click', resetToSetup);
+successRetryBtn.addEventListener('click', resetToSetup);
+
+startBtn.addEventListener('click', () => {
+const min = parseInt(document.getElementById('min').value, 10) || 0;
+const sec = parseInt(document.getElementById('sec').value, 10) || 0;
+const secPerKm = min * 60 + sec;
+if(secPerKm <= 0) return;
+baseTargetSpeed = 1000 / secPerKm;
+devMode = document.getElementById('devMode').checked;
+const goalKm = parseFloat(document.getElementById('goal').value);
+goalDistanceM = (isFinite(goalKm) && goalKm > 0) ? goalKm * 1000 : 0;
+distLbl.textContent = goalDistanceM > 0 ? 'km (Ziel)' : 'km gelaufen';
+
+if(!('geolocation' in navigator)){
+err.textContent = 'Dieses Gerät unterstützt keine Standortabfrage.';
+err.style.display = 'block';
+return;
+}
+
+setup.style.display = 'none';
+document.getElementById('recordsCard').style.display = 'none';
+startBtn.style.display = 'none';
+runEl.style.display = 'block';
+
+startTime = Date.now();
+userDistance = 0; lastPos = null; recentSpeeds = []; finished = false;
+nextEventAt = null; eventBag = []; frozenSeconds = 0;
+sprintActive = false; squatActive = false; lungesActive = false;
+plankActive = false; jacksActive = false; burpeesActive = false;
+eventPenalty = 0; nachbrennerUsed = false; nachbrennerActive = false; nachbrennerBoost = 0;
+paused = false; totalPausedMs = 0; wasClose = false; wasFar = false; tempMessage = null;
+sprintBanner.style.display = 'none'; squatBanner.style.display = 'none';
+lungesBanner.style.display = 'none'; plankBanner.style.display = 'none';
+jacksBanner.style.display = 'none'; burpeesBanner.style.display = 'none';
+nachbrennerBanner.style.display = 'none';
+pauseOverlay.style.display = 'none';
+startBanner.style.display = 'block';
+fillEl.style.width = '0%';
+showQuote(Q_START, 4000);
+
+watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+enableHighAccuracy: true, maximumAge: 1000, timeout: 20000
+});
+timerId = setInterval(tick, TICK_MS);
+});
+
+stopBtn.addEventListener('click', () => {
+if(finished) return;
+const elapsed = (Date.now() - startTime - totalPausedMs)/1000;
+if(elapsed - GRACE_MS/1000 <= 0){
+if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+if(timerId !== null) clearInterval(timerId);
+finished = true;
+resetToSetup();
+return;
+}
+endRunSuccess(false);
+});
+
+loadRecords();
+})();
+</script>
+</body>
+</html>
