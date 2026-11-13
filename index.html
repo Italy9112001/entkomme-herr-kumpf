@@ -234,7 +234,46 @@ const pauseBtn = document.getElementById('pauseBtn');
 const resumeBtn = document.getElementById('resumeBtn');
 const runEl = document.getElementById('run');
 const err = document.getElementById('err');
+let gpsReady = false;
 
+startBtn.disabled = true;
+startBtn.textContent = "GPS wird gesucht...";
+startBtn.style.opacity = "0.5";
+
+function requestInitialGPS() {
+    if (!navigator.geolocation) {
+        err.textContent = "GPS wird nicht unterstützt.";
+        err.style.display = "block";
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            if (position.coords.accuracy > MAX_ACCURACY_M) {
+                err.textContent = "GPS-Signal zu ungenau. Bitte erneut versuchen.";
+                err.style.display = "block";
+                return;
+            }
+
+            gpsReady = true;
+            err.style.display = "none";
+            startBtn.disabled = false;
+            startBtn.textContent = "Lauf starten";
+            startBtn.style.opacity = "1";
+        },
+        (error) => {
+            gpsReady = false;
+            err.textContent = "Standort nicht verfügbar. Bitte GPS-Berechtigung erlauben.";
+            err.style.display = "block";
+            startBtn.disabled = true;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+        }
+    );
+}
 const paceNowEl = document.getElementById('paceNow');
 const distEl = document.getElementById('dist');
 const distLbl = document.getElementById('distLbl');
@@ -664,6 +703,12 @@ retryBtn.addEventListener('click', resetToSetup);
 successRetryBtn.addEventListener('click', resetToSetup);
 
 startBtn.addEventListener('click', () => {
+  if (!gpsReady) {
+    err.textContent = 'GPS ist noch nicht bereit. Bitte warte auf ein genaues GPS-Signal.';
+    err.style.display = 'block';
+    return;
+}
+  
 const min = parseInt(document.getElementById('min').value, 10) || 0;
 const sec = parseInt(document.getElementById('sec').value, 10) || 0;
 const secPerKm = min * 60 + sec;
@@ -719,7 +764,7 @@ return;
 }
 endRunSuccess(false);
 });
-
+requestInitialGPS();
 loadRecords();
 })();
 </script>
